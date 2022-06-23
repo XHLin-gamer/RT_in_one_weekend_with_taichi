@@ -10,8 +10,8 @@ if use_f64:
     float_type = ti.f64
 vec3 = ti.types.vector(3, float_type)
 
-# @ti.struct_class
-@ti.data_oriented
+@ti.struct_class
+# @ti.data_oriented
 class ray:
     origin: vec3
     direction: vec3
@@ -20,6 +20,9 @@ class ray:
         self.origin = origin
         self.direction = direction.normalized()
 
+    @ti.func
+    def normalized(self):
+        self.direction = self.direction.normalized()
     @ti.func
     def at(self, t: float_type) -> ti.Vector:
         return self.origin + t * self.direction
@@ -165,6 +168,7 @@ class camera:
     def get_ray(self, s, t):
         rd = self.lens_radius * random_in_unit_disk()
         offset = self.u*rd[0] + self.v*rd[1]
-
-        return ray(origin=self.origin + offset,
+        new_ray = ray(origin=self.origin + offset,
                    direction=self.lower_left_corner + s*self.horizental + t*self.vertical - self.origin - offset)
+        new_ray.normalized()
+        return  new_ray

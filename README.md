@@ -23,7 +23,7 @@ vec3 = ti.types.vector(3, float_type)
 
 ![yellow.png](./yellow.png)
 
-目前没找到原因，总之很怪
+原因是taichi的```struct_class```不会自动调用python的class的```__init__```函数,导致ray的direction没有被normalized.手动normalized可以解决
 
 - GPU运行效率并不高
 
