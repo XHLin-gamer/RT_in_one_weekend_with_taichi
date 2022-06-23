@@ -10,7 +10,7 @@ res = 720, 500
 # BVH
 
 output_image = False
-output_image_target_iteration = 600
+output_image_target_iteration = 1000
 
 color_buffer = ti.Vector.field(3, dtype=float_type, shape=res)
 frame_buffer = ti.Vector.field(3, dtype=float_type, shape=res)
@@ -39,7 +39,7 @@ scene = hittable_list(max_sphere_nums=2**9)
 def init_scene():
     # ground
     scene.add_sphere(center=ti.Vector(
-        [0, -600.0, -1]), radius=600.0, material=0, color=ti.Vector([0.5, 0.5, 0.5]))
+        [0, -1000.0, -1]), radius=1000.0, material=0, color=ti.Vector([0.5, 0.5, 0.5]))
     for _a in range(22):
         for _b in range(22):
             rrr = random()
@@ -100,7 +100,7 @@ def ray_color(r) -> ti.Vector:
                           direction=recursive_direction)
             new_ray.normalized()
             is_hit, root, position, normal, front_face, color, material, fuzz, etai_over_etat = scene.hit(
-                new_ray, 0.0001, 600000)
+                new_ray, 0.0001, 1000000)
             # 使用hierarchy 求交
             t = root
             if is_hit:
@@ -109,7 +109,8 @@ def ray_color(r) -> ti.Vector:
                     # fac = ti.exp(-root)/4 + 0.75
                     # brightness *= color * fac + ti.Vector([1.0, 1.0, 1.0], dt=float_type)*(1-fac)
                     brightness *= color
-                    r_p = random_init_sphere()
+                    # r_p = random_init_sphere()
+                    r_p = random_in_hemi_sphere(normal)
                     recursive_direction = normal.normalized() + r_p
                     recursive_origin = position
                 elif material == 1:

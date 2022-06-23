@@ -10,19 +10,22 @@ if use_f64:
     float_type = ti.f64
 vec3 = ti.types.vector(3, float_type)
 
+
 @ti.struct_class
 # @ti.data_oriented
 class ray:
     origin: vec3
     direction: vec3
-    # @ti.func
-    def __init__(self, origin:float_type, direction:float_type):
+
+    @ti.func
+    def __init__(self, origin: float_type, direction: float_type):
         self.origin = origin
         self.direction = direction.normalized()
 
     @ti.func
     def normalized(self):
         self.direction = self.direction.normalized()
+
     @ti.func
     def at(self, t: float_type) -> ti.Vector:
         return self.origin + t * self.direction
@@ -72,6 +75,16 @@ def random_init_sphere():
     return ti.Vector([ti.cos(a)*ti.cos(b), ti.sin(a)*ti.cos(b), ti.sin(b)])
 
 
+@ti.func
+def random_in_hemi_sphere(direction):
+    r1 = random_init_sphere()
+    sign = r1.dot(direction)
+    if ti.abs(sign) < 1e-9:
+        sign = 1.0
+        r1 = direction
+    return r1*(sign/ti.abs(sign))
+
+
 @ti.data_oriented
 class hittable_list:
     def __init__(self, max_sphere_nums):
@@ -97,7 +110,7 @@ class hittable_list:
         is_hit = False
         front_face = True
         fuzz: float_type = 0.0
-        etai_over_etat:float_type = 0.0
+        etai_over_etat: float_type = 0.0
         for i in range(self.sphere_loaded):
             _is_hit, _root, _position, _normal, _color, _material, _fuzz, _etai_over_etat = self.sphere_field[i].hit(
                 ray, t_min, t_max)
@@ -169,6 +182,6 @@ class camera:
         rd = self.lens_radius * random_in_unit_disk()
         offset = self.u*rd[0] + self.v*rd[1]
         new_ray = ray(origin=self.origin + offset,
-                   direction=self.lower_left_corner + s*self.horizental + t*self.vertical - self.origin - offset)
+                      direction=self.lower_left_corner + s*self.horizental + t*self.vertical - self.origin - offset)
         new_ray.normalized()
-        return  new_ray
+        return new_ray
