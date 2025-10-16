@@ -4,7 +4,7 @@ import taichi as ti
 import time
 
 ti.init(arch=ti.gpu)
-res = 720, 500
+res = 1920, 1080
 
 # rays pools
 # BVH
@@ -21,7 +21,7 @@ aspect_ratio = res[0] / res[1]
 viewport_width = aspect_ratio * viewport_height
 sampels_per_pixel = ti.field(dtype=ti.int32, shape=())
 sampels_per_pixel[None] = 4
-depth = 10
+depth = 32
 # camera
 # focus_lenth = 1.0
 # origin = ti.Vector([0.0, 0.0, 0.0])
@@ -76,7 +76,7 @@ vup = vec3([0.0, 1.0, 0.0])
 
 aperture = .1
 # dist_to_focus =(look_from - look_at).dot(look_from - look_at)
-dist_to_focus = 10.0
+dist_to_focus = 12.0
 cam = camera(look_from=look_from, look_at=look_at, vup=vup, vfov=20.0,
              aspect_ratio=aspect_ratio, focus_dist=dist_to_focus, aperture=aperture)
 

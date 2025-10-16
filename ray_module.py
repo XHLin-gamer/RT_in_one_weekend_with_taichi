@@ -11,7 +11,7 @@ if use_f64:
 vec3 = ti.types.vector(3, float_type)
 
 
-@ti.struct_class
+@ti.dataclass
 # @ti.data_oriented
 class ray:
     origin: vec3
@@ -31,7 +31,7 @@ class ray:
         return self.origin + t * self.direction
 
 
-@ti.struct_class
+@ti.dataclass
 class sphere:
     center: vec3
     radius: float_type
