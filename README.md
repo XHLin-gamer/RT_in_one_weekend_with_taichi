@@ -1,18 +1,55 @@
-# RT_in_one_weekend_with_taichi
-![pic1](./1655910860.png)
+# Ray Tracing in One Weekend with Taichi
 
-用taichi搓了一个[Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)的简易光线追踪程序。用taichi进行光线追踪的变成雀食轻松不少，替换了原文中使用C++智能指针的部分，编写程序的时候不用想着这个智能指针咋用来着之类的问题。而且比起用openMP多线程，GPU的毕竟并行程度高，跑得快。
+<div align="center">
+  <img src="./1655910860.png" alt="Ray Tracing Demo" width="800"/>
+</div>
 
-### 遇到的几个问题：
-- 数值精度问题
-  
-~~taichi默认使用32为浮点数。上面的那副展示图中，用来表示地面的那个球体半径太大了，撞到了数值精度的问题，在32位浮点数表示的情况下，会产生神秘的纹理。如下所示~~
+## Overview
 
-[neozhaoliang](https://github.com/neozhaoliang)指出是由于漫反射材质半球面采样误用为球面采样造成了banding。经过修改和测试，确实如此。但是让我想不明白的是，把浮点数改成64位也确实解决了banding。可能存在着神秘作用机制吧。
+This project implements a ray tracer using the [Taichi programming language](https://github.com/taichi-dev/taichi), based on Peter Shirley's excellent book [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html).
 
-![pic2](./float_acc.png)
+### How to Run
 
-两个解决方法：1，把表示地面的那个球半径调小一些，实测从1000缩小到600左右就没有问题了；2.使用64位浮点数
+
+
+### Why Taichi?
+
+- **Simpler Implementation**: Taichi eliminates the need for complex smart pointers used in the original C++ implementation
+- **GPU Acceleration**: Offers superior parallel processing capabilities compared to CPU-based multi-threading (like OpenMP)
+- **Developer Friendly**: Focus on the ray tracing algorithm without worrying about memory management
+
+## Getting Started
+
+### Prerequisites
+```bash
+pip install taichi
+```
+
+### Running the Ray Tracer
+```bash
+python weekend.py
+```
+The program will generate a ray-traced image using your GPU for acceleration.
+
+## Technical Challenges
+> This part was written in 3 years ago, and I think the situation has changed a lot :)
+### 1. Numerical Precision Issues
+
+~~Taichi uses 32-bit floating-point numbers by default. In the showcase image above, the sphere representing the ground has too large a radius, which hit numerical precision limitations. Under 32-bit floating-point representation, this caused mysterious textures as shown below~~
+
+[neozhaoliang](https://github.com/neozhaoliang) pointed out that the banding was caused by mistakenly using sphere sampling instead of hemisphere sampling for diffuse materials. After modification and testing, this was indeed the case. However, what puzzles me is that switching to 64-bit floating-point numbers also resolved the banding. There might be some mysterious mechanism at work.
+
+<div align="center">
+  <img src="./float_acc.png" alt="Precision Issues" width="600"/>
+</div>
+
+#### Solutions:
+
+1. **Reduce Ground Sphere Radius**
+   - Decrease from 1000 to approximately 600
+   - Quick and effective solution
+
+2. **Use 64-bit Floating Point**
 ```python
 # ray_module.py , line 5:
 use_f64 = False # switch True to use Double-precision floating-point 
@@ -21,20 +58,24 @@ if use_f64:
     float_type = ti.f64
 vec3 = ti.types.vector(3, float_type)
 ```
-但是64位浮点数算的炒鸡慢
+   Note: This solution comes with significant performance overhead
 
-- ray类改写成ti.struct_class地面变黄
+### 2. Yellow Ground Artifact
 
-![yellow.png](./yellow.png)
+<div align="center">
+  <img src="./yellow.png" alt="Yellow Ground Issue" width="600"/>
+</div>
 
-原因是taichi的```struct_class```不会自动调用python的class的```__init__```函数,导致ray的direction没有被normalized.手动normalized可以解决
+This issue emerged when converting the ray class to `ti.struct_class`. The root cause was that Taichi's `struct_class` doesn't automatically invoke Python's `__init__` function, leaving ray directions unnormalized. Manual normalization fixed the problem.
 
-- GPU运行效率并不高
+### 3. GPU Utilization
 
-程序运行的时候GPU使用率非常低，不如说就是0%
+Currently experiencing unexpectedly low GPU utilization (near 0%) during execution. Potential causes under investigation:
+- Inefficient memory access patterns
+- Python-scope constructor overhead
+- Suboptimal ray intersection parallelization
 
-想不明白为啥，可能对内存访问效率太差了？或者使用了python-scope的构造函数？或者每条光线求交并没有充分使用GPU的并行性？
-## reference
+## References
 
 - [bsavery/ray-tracing-one-weekend-taichi](https://github.com/bsavery/ray-tracing-one-weekend-taichi)
 - [erizmr/taichi_ray_tracing](https://github.com/erizmr/taichi_ray_tracing)
