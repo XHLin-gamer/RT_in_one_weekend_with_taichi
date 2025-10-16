@@ -8,9 +8,6 @@
 
 This project implements a ray tracer using the [Taichi programming language](https://github.com/taichi-dev/taichi), based on Peter Shirley's excellent book [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html).
 
-### How to Run
-
-
 
 ### Why Taichi?
 
